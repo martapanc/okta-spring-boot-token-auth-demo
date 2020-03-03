@@ -33,6 +33,9 @@ dependencies {
 	compile('javax.xml.bind:jaxb-api:2.3.0')
 	compile('javax.activation:activation:1.1')
 	compile('org.glassfish.jaxb:jaxb-runtime:2.3.0')
+
+	compile group: 'com.rometools', name: 'rome', version: '1.12.2'
+	compile 'org.jsoup:jsoup:1.13.1'
 }
 
 /*
