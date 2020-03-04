@@ -16,6 +16,6 @@ public class Entry {
     private List<String> categories;
     private List<String> contents;
     private String description;
-    private URL uri;
     private String title;
+    private URL uri;
 }

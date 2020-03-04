@@ -12,7 +12,7 @@ import java.net.URL;
 public class Image {
 
     private String description;
-    private URL url;
     private int height;
+    private URL url;
     private int weight;
 }

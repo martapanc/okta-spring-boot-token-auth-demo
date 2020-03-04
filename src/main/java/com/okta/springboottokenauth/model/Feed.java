@@ -12,11 +12,11 @@ import java.util.List;
 @AllArgsConstructor
 public class Feed {
 
-    private String title;
     private List<String> authors;
     private String description;
     private List<Entry> entries;
-    private URL link;
     private Image image;
+    private URL link;
+    private String title;
 
 }
