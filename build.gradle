@@ -36,6 +36,12 @@ dependencies {
 
 	compile group: 'com.rometools', name: 'rome', version: '1.12.2'
 	compile 'org.jsoup:jsoup:1.13.1'
+
+	compileOnly 'org.projectlombok:lombok:1.18.12'
+	annotationProcessor 'org.projectlombok:lombok:1.18.12'
+
+	testCompileOnly 'org.projectlombok:lombok:1.18.12'
+	testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
 }
 
 /*
