@@ -1,5 +1,11 @@
 package com.okta.springboottokenauth.service;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonObject;
+import com.okta.springboottokenauth.model.FeedSearchResult;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -7,6 +13,7 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 
 public class SearchFeed {
 
@@ -20,11 +27,27 @@ public class SearchFeed {
             HttpURLConnection connection = sendRequest(query);
             String response = readResponse(connection);
 
+            FeedSearchResult feedSearchResult = deserialiseResponseToObject(response);
+
             return response;
         } catch (IOException e) {
             e.printStackTrace();
             throw new IOException();
         }
+    }
+
+    private FeedSearchResult deserialiseResponseToObject(String response) {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+
+        gsonBuilder.registerTypeAdapter(Date.class,
+                (JsonDeserializer<Date>) (json, typeOfT, context) -> new Date(json.getAsJsonPrimitive().getAsLong()));
+        Gson gson = gsonBuilder.create();
+
+        JsonObject jsonObject = gson.fromJson(response, JsonObject.class);
+
+        FeedSearchResult feedSearchResult = gson.fromJson(jsonObject.getAsJsonArray("results").get(0), FeedSearchResult.class);
+
+        return feedSearchResult;
     }
 
     private URL createUrl(String query) throws MalformedURLException {
