@@ -2,7 +2,6 @@ package com.okta.springboottokenauth.model;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
@@ -10,17 +9,25 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
+
+@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class FeedSearchResult {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Long id;
     private String description;
     @SerializedName("feedId")
     private String feedUrl;
@@ -28,7 +35,8 @@ public class FeedSearchResult {
     private String language;
     private Date lastUpdated;
     private long subscribers;
-    private List<Tag> tags;
+    @ElementCollection
+    private List<String> tags;
     private String websiteTitle;
     @SerializedName("website")
     private String websiteUrl;
@@ -42,6 +50,6 @@ public class FeedSearchResult {
         LinkedTreeMap<String, Integer> list = gson.fromJson(jsonElement.getAsJsonObject(),
                 new TypeToken<LinkedTreeMap<String, Integer>>() {}.getType());
 
-        this.tags = list.keySet().stream().map(Tag::new).collect(Collectors.toList());
+        this.tags = new ArrayList<>(list.keySet());
     }
 }
