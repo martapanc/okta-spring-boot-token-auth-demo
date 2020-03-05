@@ -2,7 +2,9 @@ package com.okta.springboottokenauth.service;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.okta.springboottokenauth.model.FeedSearchResult;
 
@@ -13,13 +15,20 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class SearchFeed {
 
     private static final int TIMEOUT = 3000;
     private static final String BASE_URL = "https://cloud.feedly.com/v3/";
     private static final String SEARCH_ENDPOINT = "search/feeds?query=%s";
+    private static final String GET = "GET";
+    private static final String CONTENT_TYPE = "Content-Type";
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String RESPONSE_TAG_COUNTS = "tagCounts";
+    private static final String RESPONSE_RESULTS = "results";
 
     public String searchFeed(String query) throws IOException {
 
@@ -27,7 +36,7 @@ public class SearchFeed {
             HttpURLConnection connection = sendRequest(query);
             String response = readResponse(connection);
 
-            FeedSearchResult feedSearchResult = deserialiseResponseToObject(response);
+            List<FeedSearchResult> feedSearchResult = deserialiseResponseToObject(response);
 
             return response;
         } catch (IOException e) {
@@ -36,16 +45,28 @@ public class SearchFeed {
         }
     }
 
-    private FeedSearchResult deserialiseResponseToObject(String response) {
+    private List<FeedSearchResult> deserialiseResponseToObject(String response) {
         GsonBuilder gsonBuilder = new GsonBuilder();
 
         gsonBuilder.registerTypeAdapter(Date.class,
                 (JsonDeserializer<Date>) (json, typeOfT, context) -> new Date(json.getAsJsonPrimitive().getAsLong()));
         Gson gson = gsonBuilder.create();
 
-        JsonObject jsonObject = gson.fromJson(response, JsonObject.class);
+        JsonArray results = gson.fromJson(response, JsonObject.class).getAsJsonArray(RESPONSE_RESULTS);
 
-        FeedSearchResult feedSearchResult = gson.fromJson(jsonObject.getAsJsonArray("results").get(0), FeedSearchResult.class);
+        List<FeedSearchResult> feedSearchResultList = new ArrayList<>();
+        for (JsonElement jsonElement : results) {
+            feedSearchResultList.add(getFeedSearchResult(gson, jsonElement));
+        }
+
+        return feedSearchResultList;
+    }
+
+    private FeedSearchResult getFeedSearchResult(Gson gson, JsonElement jsonElement) {
+        FeedSearchResult feedSearchResult = gson.fromJson(jsonElement, FeedSearchResult.class);
+
+        feedSearchResult.validateFeedUrl();
+        feedSearchResult.addTags(jsonElement.getAsJsonObject().get(RESPONSE_TAG_COUNTS));
 
         return feedSearchResult;
     }
@@ -97,8 +118,8 @@ public class SearchFeed {
             URL url = createUrl(query);
 
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            con.setRequestProperty("Content-Type", "application/json");
+            con.setRequestMethod(GET);
+            con.setRequestProperty(CONTENT_TYPE, APPLICATION_JSON);
             con.setConnectTimeout(TIMEOUT);
             con.setReadTimeout(TIMEOUT);
 
