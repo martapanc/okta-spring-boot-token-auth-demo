@@ -19,13 +19,14 @@ public class Reader {
     public static Feed readFeed(String url) throws IOException, FeedException {
         URL feedSource = new URL(url);
         SyndFeedInput feedInput = new SyndFeedInput();
-        return new Feed(feedInput.build(new XmlReader(feedSource)));
+        return new Feed(feedInput.build(new XmlReader(feedSource)), url);
     }
 
     public static Feed readFeed(FeedSearchResult feedSearchResult) throws IOException, FeedException {
-        URL feedSource = new URL(feedSearchResult.getFeedUrl());
+        String feedUrl = feedSearchResult.getFeedUrl();
+        URL feedSource = new URL(feedUrl);
         SyndFeedInput feedInput = new SyndFeedInput();
-        return new Feed(feedInput.build(new XmlReader(feedSource)));
+        return new Feed(feedInput.build(new XmlReader(feedSource)), feedUrl);
     }
 
     public static List<String> findFeedUrlsInWebsite(String url) throws IOException {

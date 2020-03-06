@@ -15,17 +15,25 @@ import java.io.IOException;
 import java.util.Map;
 
 @RestController
-@RequestMapping(path="/feed")
+@RequestMapping(path = "/feed")
 public class FeedController {
 
     @Autowired
     private FeedRepository feedRepository;
 
     @RequestMapping(path = "/create", method = RequestMethod.POST)
-    public @ResponseBody String createFeed(@RequestBody Map<String, String> payload) throws IOException, FeedException {
+    public @ResponseBody
+    String createFeed(@RequestBody Map<String, String> payload) throws IOException, FeedException {
 
-        Feed feed = Reader.readFeed(payload.get("feed_url"));
-        feedRepository.save(feed);
-        return "New feed created: ";
+        String feed_url = payload.get("feed_url");
+        Feed feed = Reader.readFeed(feed_url);
+
+        if (feedRepository.findByFeedUrl(feed_url) == null) {
+            feedRepository.save(feed);
+            return "New feed created: " + feed;
+        }
+
+        return "Feed already present in db: " + feed.getFeedUrl();
+
     }
 }

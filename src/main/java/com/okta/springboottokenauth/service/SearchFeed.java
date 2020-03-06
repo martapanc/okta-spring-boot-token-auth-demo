@@ -6,12 +6,14 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.annotations.Expose;
 import com.okta.springboottokenauth.model.FeedSearchResult;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.reflect.Modifier;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -48,7 +50,9 @@ public class SearchFeed {
     private List<FeedSearchResult> deserialiseResponseToObject(String response) {
         GsonBuilder gsonBuilder = new GsonBuilder();
 
-        gsonBuilder.registerTypeAdapter(Date.class,
+        gsonBuilder
+                .excludeFieldsWithModifiers(Modifier.TRANSIENT)
+                .registerTypeAdapter(Date.class,
                 (JsonDeserializer<Date>) (json, typeOfT, context) -> new Date(json.getAsJsonPrimitive().getAsLong()));
         Gson gson = gsonBuilder.create();
 

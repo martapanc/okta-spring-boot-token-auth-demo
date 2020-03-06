@@ -16,37 +16,52 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Entity
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 public class Entry {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Long id;
-    @OneToMany(targetEntity = Author.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)    private List<Author> authors;
+    @Column(length = 200, nullable = false)
+    private String title;
+
+    @OneToMany(targetEntity = Author.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Author> authors;
+
     @ElementCollection
     private List<String> categories;
+
     @ElementCollection
-    @Column( length = 100000 )
+    @Column(length = 100000)
     private List<String> contents;
-    @Column( length = 10000 )
+
+    @Column(length = 10000)
     private String description;
-    private String title;
+
     private String url;
+
+    public Entry() {}
 
     public Entry(SyndEntry syndEntry) {
         this.authors = syndEntry.getAuthors().stream().map(Author::new).collect(Collectors.toList());
         this.categories = syndEntry.getCategories().stream().map(SyndCategory::getName).collect(Collectors.toList());
         this.contents = syndEntry.getContents().stream().map(SyndContent::getValue).collect(Collectors.toList());
-        this.description = syndEntry.getDescription().getValue();
+        this.description = Optional.ofNullable(syndEntry.getDescription()).map(SyndContent::getValue).orElse("");
         this.title = syndEntry.getTitle();
         this.url = syndEntry.getLink();
+    }
+
+    @Override
+    public String toString() {
+        return "Entry{" +
+                "authors=" + authors +
+                ", categories=" + categories +
+                ", title='" + title + '\'' +
+                ", url='" + url + '\'' +
+                '}';
     }
 }
