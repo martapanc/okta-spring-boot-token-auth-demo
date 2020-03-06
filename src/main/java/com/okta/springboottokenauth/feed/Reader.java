@@ -1,6 +1,7 @@
 package com.okta.springboottokenauth.feed;
 
-import com.rometools.rome.feed.synd.SyndFeed;
+import com.okta.springboottokenauth.model.Feed;
+import com.okta.springboottokenauth.model.FeedSearchResult;
 import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
@@ -15,11 +16,16 @@ import java.util.List;
 
 public class Reader {
 
-    public static String readFeed(String url) throws IOException, FeedException {
+    public static Feed readFeed(String url) throws IOException, FeedException {
         URL feedSource = new URL(url);
         SyndFeedInput feedInput = new SyndFeedInput();
-        SyndFeed feed = feedInput.build(new XmlReader(feedSource));
-        return feed.getTitle();
+        return new Feed(feedInput.build(new XmlReader(feedSource)));
+    }
+
+    public static Feed readFeed(FeedSearchResult feedSearchResult) throws IOException, FeedException {
+        URL feedSource = new URL(feedSearchResult.getFeedUrl());
+        SyndFeedInput feedInput = new SyndFeedInput();
+        return new Feed(feedInput.build(new XmlReader(feedSource)));
     }
 
     public static List<String> findFeedUrlsInWebsite(String url) throws IOException {

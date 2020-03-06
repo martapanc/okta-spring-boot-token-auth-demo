@@ -1,6 +1,6 @@
 package com.okta.springboottokenauth.model;
 
-import com.rometools.rome.feed.synd.SyndImage;
+import com.rometools.rome.feed.synd.SyndPerson;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,20 +14,18 @@ import javax.persistence.Id;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Image {
+public class Author {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
-    private String description;
-    private int height;
-    private String url;
-    private int weight;
+    private String email;
+    private String name;
+    private String uri;
 
-    public Image(SyndImage syndImage) {
-        this.description = syndImage.getDescription();
-        this.height = syndImage.getHeight();
-        this.url = syndImage.getUrl();
-        this.weight = syndImage.getWidth();
+    public Author(SyndPerson syndPerson) {
+        this.email = syndPerson.getEmail();
+        this.name = syndPerson.getName();
+        this.uri = syndPerson.getUri();
     }
 }

@@ -52,4 +52,8 @@ public class FeedSearchResult {
 
         this.tags = new ArrayList<>(list.keySet());
     }
+
+    public String getFeedUrl() {
+        return feedUrl;
+    }
 }
