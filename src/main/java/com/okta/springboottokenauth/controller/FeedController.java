@@ -34,6 +34,5 @@ public class FeedController {
         }
 
         return "Feed already present in db: " + feed.getFeedUrl();
-
     }
 }

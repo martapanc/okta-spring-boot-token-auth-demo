@@ -26,6 +26,10 @@ import java.util.stream.Collectors;
 public class Entry {
 
     @Id
+    @Column(updatable = false, nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @Column(length = 200, nullable = false)
     private String title;
 

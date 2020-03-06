@@ -28,6 +28,7 @@ import java.util.List;
 public class FeedSearchResult {
 
     @Id
+    @Column(name = "id", updatable = false, nullable = false)
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long feedResultId;
 
