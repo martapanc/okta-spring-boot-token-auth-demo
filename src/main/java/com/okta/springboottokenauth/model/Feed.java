@@ -55,6 +55,12 @@ public class Feed {
     public Feed() {
     }
 
+    public Feed(String title, String siteUrl, String feedUrl) {
+        this.title = title;
+        this.siteUrl = siteUrl;
+        this.feedUrl = feedUrl;
+    }
+
     public Feed(SyndFeed syndFeed, String feedUrl) {
         this.authors = syndFeed.getAuthors().stream().map(Author::new).collect(Collectors.toList());
         this.description = syndFeed.getDescription();
