@@ -48,4 +48,8 @@ public class User {
                 ", feedList=" + feedList +
                 '}';
     }
+
+    public List<Feed> getFeeds() {
+        return feedList;
+    }
 }
