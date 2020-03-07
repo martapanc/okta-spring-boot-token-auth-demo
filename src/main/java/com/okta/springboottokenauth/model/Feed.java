@@ -3,6 +3,8 @@ package com.okta.springboottokenauth.model;
 import com.rometools.rome.feed.synd.SyndFeed;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -11,15 +13,19 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Entity
 @Data
+@Table(name = "feed")
 @AllArgsConstructor
 public class Feed {
 
@@ -31,13 +37,14 @@ public class Feed {
     @Column(nullable = false, length = 200)
     private String title;
 
-    @OneToMany(targetEntity = Author.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(targetEntity = Author.class, cascade = CascadeType.ALL)
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<Author> authors;
 
     @Column(length = 10000)
     private String description;
 
-    @OneToMany(targetEntity = Entry.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(targetEntity = Entry.class, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Entry> entries;
 
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
@@ -49,8 +56,8 @@ public class Feed {
     @Column(nullable = false)
     private String feedUrl;
 
-    @ManyToOne(targetEntity = User.class, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private List<User> users;
+    @ManyToMany(mappedBy = "feeds", fetch = FetchType.EAGER)
+    private Set<User> users = new HashSet<>();
 
     public Feed() {
     }

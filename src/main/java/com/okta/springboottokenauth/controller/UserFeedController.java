@@ -34,7 +34,7 @@ public class UserFeedController {
             return ResponseEntity.badRequest().body("User not found: " + user_email);
         }
 
-        List<Feed> feedList = feedRepository.findByUsers_email(user_email);
+        List<Feed> feedList = feedRepository.findFeedsByUserEmail(user_email);
 
         return ResponseEntity.ok(feedList);
     }
