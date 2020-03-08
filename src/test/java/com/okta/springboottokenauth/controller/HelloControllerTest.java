@@ -3,7 +3,6 @@ package com.okta.springboottokenauth.controller;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.okta.springboottokenauth.Application;
-import com.rometools.rome.io.impl.Base64;
 import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +44,7 @@ class HelloControllerTest {
     private FilterChainProxy springSecurityFilterChain;
 
     private static final String ID = "0oa2yaplcvc3pw5aa4x6";
-    private static final String SECRET = "KsGMIteBpeTai5g2-0BWYuJeIfwVnoPt5uvl5JPp";
+    private static final String USERPASS = "MG9hMnlhcGxjdmMzcHc1YWE0eDY6S3NHTUl0ZUJwZVRhaTVnMi0wQldZdUplSWZ3Vm5vUHQ1dXZsNUpQcA==";
 
     @Before
     public void setup() {
@@ -73,15 +72,13 @@ class HelloControllerTest {
     }
 
     private String obtainAccessToken() throws Exception {
-        String userPass = ID + ":" + SECRET;
-
         byte[] postDataBytes = getPostDataBytes();
 
         HttpURLConnection con = (HttpURLConnection) new URL("https://dev-506887.okta.com/oauth2/default/v1/token").openConnection();
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         con.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
-        con.setRequestProperty("Authorization", "Basic " + new String(Base64.encode(userPass.getBytes())));
+        con.setRequestProperty("Authorization", "Basic " + USERPASS);
         con.setDoOutput(true);
         con.getOutputStream().write(postDataBytes);
 
