@@ -28,7 +28,7 @@ dependencies {
 	compile('com.okta.spring:okta-spring-boot-starter:0.6.0')
 	compile('org.springframework.boot:spring-boot-starter-security')
 	compile('org.springframework.boot:spring-boot-starter-web')
-	compile ('org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.0.5.RELEASE')
+	compile ('org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.2.5.RELEASE')
 	compile group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '2.4.0.RELEASE'
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 	testCompile('org.springframework.security:spring-security-test')

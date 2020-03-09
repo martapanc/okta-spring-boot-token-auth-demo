@@ -9,7 +9,6 @@ import com.google.gson.JsonObject;
 import com.okta.springboottokenauth.crud.FeedRepository;
 import com.okta.springboottokenauth.model.Feed;
 import com.okta.springboottokenauth.model.FeedSearchResult;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,7 +19,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
