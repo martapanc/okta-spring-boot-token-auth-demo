@@ -67,4 +67,8 @@ public class User {
     public void setFeeds(Set<Feed> feeds) {
         this.feeds = feeds;
     }
+
+    public void addFeed(Feed feed) {
+        this.feeds.add(feed);
+    }
 }
