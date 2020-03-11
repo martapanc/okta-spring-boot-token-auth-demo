@@ -41,8 +41,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class UserFeedControllerTest {
 
-    private final String listRequestBody = "{\"user_email\": \"test.user@gmail.com\"}";
-    private final String cudRequestBody = "{\"user_email\": \"test.user@gmail.com\", \"feed_url\": \"http://feeds.feedburner.com/Disinformatico/\"}";
+    private static final String FEED_URL_1 = "https://ilsignordistruggere.com/feed/atom/";
+    private static final String FEED_URL_2 = "http://feeds.feedburner.com/Disinformatico/";
 
     @Autowired
     private MockMvc mockMvc;
@@ -72,21 +72,19 @@ class UserFeedControllerTest {
         doReturn(user).when(userRepository).findByEmail("test.user@gmail.com");
 
         List<Feed> feedList = new ArrayList<>();
-        Feed feed = Reader.readFeed("https://ilsignordistruggere.com/feed/atom/");
+        Feed feed = Reader.readFeed(FEED_URL_1);
         feedList.add(feed);
 
-        String feedUrl = "http://feeds.feedburner.com/Disinformatico/";
-//        Feed feed1 = Reader.readFeed(feedUrl);
-        doReturn(feed).when(feedRepository).findByFeedUrl(feedUrl);
-
+        doReturn(feed).when(feedRepository).findByFeedUrl(FEED_URL_2);
         doReturn(feedList).when(feedRepository).findFeedsByUserEmail("test.user@gmail.com");
-
         when(userRepository.save(user)).thenReturn(user);
     }
 
     @Test
     public void shouldReturnDefaultListOfUserFeeds() throws Exception {
         String response = "[{\"feedUrl\": \"https://ilsignordistruggere.com/feed/atom/\"}]";
+
+        String listRequestBody = "{\"user_email\": \"test.user@gmail.com\"}";
 
         this.mockMvc.perform(
                 post("/user/feed/list")
@@ -99,8 +97,23 @@ class UserFeedControllerTest {
     }
 
     @Test
+    public void shouldReturn400Error_whenListingFeeds_IfUserIsNotFound() throws Exception {
+        String listRequestBody_UserNotFound = "{\"user_email\": \"not.found@gmail.com\"}";
+
+        this.mockMvc.perform(
+                post("/user/feed/list")
+                        .header("Authorization", "Bearer " + Authorization.obtainAccessToken())
+                        .header("Content-Type", "application/json")
+                        .content(listRequestBody_UserNotFound))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("User not found: not.found@gmail.com"));
+    }
+
+    @Test
     public void shouldReturnUpdatedListOfUserFeeds_afterAddingANewFeed() throws Exception {
-        String feedUrl = "http://feeds.feedburner.com/Disinformatico/";
+        String feedUrl = FEED_URL_2;
+        String cudRequestBody = "{\"user_email\": \"test.user@gmail.com\", \"feed_url\": \"" + feedUrl + "\"}";
 
         this.mockMvc.perform(
                 post("/user/feed/add")
@@ -110,8 +123,62 @@ class UserFeedControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().string("Feed " + feedUrl + " was added to user collection."));
-
-//        assertEquals(2, user.getFeeds().size());
     }
 
+    @Test
+    public void shouldReturn400Error_whenAddingUserFeed_IfUserIsNotFound() throws Exception {
+        String cudRequestBody_UserNotFound = "{\"user_email\": \"not.found@gmail.com\", \"feed_url\": \"" + FEED_URL_2 + "\"}";
+
+        this.mockMvc.perform(
+                post("/user/feed/add")
+                        .header("Authorization", "Bearer " + Authorization.obtainAccessToken())
+                        .header("Content-Type", "application/json")
+                        .content(cudRequestBody_UserNotFound))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("User not found: not.found@gmail.com"));
+    }
+
+    @Test
+    public void shouldReturn400Error_whenAddingUserFeed_IfUrlIsMalformed() throws Exception {
+        String cudRequestBody_BadFeedUrl = "{\"user_email\": \"test.user@gmail.com\", \"feed_url\": \"feeds.feedburner.com/Disinformatico\"}";
+
+        this.mockMvc.perform(
+                post("/user/feed/add")
+                        .header("Authorization", "Bearer " + Authorization.obtainAccessToken())
+                        .header("Content-Type", "application/json")
+                        .content(cudRequestBody_BadFeedUrl))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("IOException: no protocol: feeds.feedburner.com/Disinformatico"));
+    }
+
+    @Test
+    public void shouldReturn400Error_whenAddingUserFeed_IfUrlIsNotAFeed() throws Exception {
+        String cudRequestBody_UrlNotAFeed = "{\"user_email\": \"test.user@gmail.com\", \"feed_url\": \"https://attivissimo.blogspot.com/\"}";
+
+        this.mockMvc.perform(
+                post("/user/feed/add")
+                        .header("Authorization", "Bearer " + Authorization.obtainAccessToken())
+                        .header("Content-Type", "application/json")
+                        .content(cudRequestBody_UrlNotAFeed))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Error creating feed: Invalid XML: Error on line 1: DOCTYPE is disallowed when " +
+                        "the feature \"http://apache.org/xml/features/disallow-doctype-decl\" set to true."));
+    }
+
+    @Test
+    public void shouldReturnMessage_whenUserFeedsAlreadyContainFeed() throws Exception {
+        String cudRequestBody_FeedAlreadyPresent = "{\"user_email\": \"test.user@gmail.com\", \"feed_url\": \"" + FEED_URL_1 + "\"}";
+
+        this.mockMvc.perform(
+                post("/user/feed/add")
+                        .header("Authorization", "Bearer " + Authorization.obtainAccessToken())
+                        .header("Content-Type", "application/json")
+                        .content(cudRequestBody_FeedAlreadyPresent))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string("User collection already contains feed " + FEED_URL_1));
+    }
 }
