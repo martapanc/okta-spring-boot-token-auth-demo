@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping(path = "/user/feed")
@@ -37,7 +37,7 @@ public class UserFeedController {
             return ResponseEntity.badRequest().body("User not found: " + user_email);
         }
 
-        List<Feed> feedList = feedRepository.findFeedsByUserEmail(user_email);
+        Set<Feed> feedList = feedRepository.findFeedsByUserEmail(user_email);
 
         return ResponseEntity.ok(feedList);
     }

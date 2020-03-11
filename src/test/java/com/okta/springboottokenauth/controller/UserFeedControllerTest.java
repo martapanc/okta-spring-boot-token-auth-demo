@@ -64,7 +64,7 @@ class UserFeedControllerTest {
     private User user = new User("Test user", "test.user@gmail.com");
 
     @Before
-    public void setup() throws IOException, FeedException {
+    public void setUp() throws IOException, FeedException {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(wac).addFilter(springSecurityFilterChain).build();
 
         MockitoAnnotations.initMocks(this);

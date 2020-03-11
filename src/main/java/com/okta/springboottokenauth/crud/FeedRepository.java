@@ -6,6 +6,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Set;
 
 public interface FeedRepository extends CrudRepository<Feed, Long> {
 
@@ -15,5 +16,5 @@ public interface FeedRepository extends CrudRepository<Feed, Long> {
     List<Feed> findBySimilarFeedSite(@Param("siteUrl") String siteUrl);
 
     @Query("SELECT f FROM Feed f JOIN FETCH f.users AS u WHERE u.email=:email")
-    List<Feed> findFeedsByUserEmail(@Param("email") String email);
+    Set<Feed> findFeedsByUserEmail(@Param("email") String email);
 }
