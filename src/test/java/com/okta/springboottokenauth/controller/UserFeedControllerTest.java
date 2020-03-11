@@ -41,8 +41,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class UserFeedControllerTest {
 
+    private static final String TEST_USER = "test.user@gmail.com";
     private static final String FEED_URL_1 = "https://ilsignordistruggere.com/feed/atom/";
     private static final String FEED_URL_2 = "http://feeds.feedburner.com/Disinformatico/";
+    private static final String LIST_REQUEST_BODY = "{\"user_email\": \"test.user@gmail.com\"}";
+    private static final String USER_NOT_FOUND = "not.found@gmail.com";
 
     @Autowired
     private MockMvc mockMvc;
@@ -61,7 +64,7 @@ class UserFeedControllerTest {
     private FeedRepository feedRepository;
 
     @InjectMocks
-    private User user = new User("Test user", "test.user@gmail.com");
+    private User user = new User("Test user", TEST_USER);
 
     @Before
     public void setUp() throws IOException, FeedException {
@@ -69,36 +72,26 @@ class UserFeedControllerTest {
 
         MockitoAnnotations.initMocks(this);
 
-        doReturn(user).when(userRepository).findByEmail("test.user@gmail.com");
+        doReturn(user).when(userRepository).findByEmail(TEST_USER);
 
         List<Feed> feedList = new ArrayList<>();
         Feed feed = Reader.readFeed(FEED_URL_1);
         feedList.add(feed);
 
         doReturn(feed).when(feedRepository).findByFeedUrl(FEED_URL_2);
-        doReturn(feedList).when(feedRepository).findFeedsByUserEmail("test.user@gmail.com");
+        doReturn(feedList).when(feedRepository).findFeedsByUserEmail(TEST_USER);
         when(userRepository.save(user)).thenReturn(user);
     }
 
     @Test
     public void shouldReturnDefaultListOfUserFeeds() throws Exception {
         String response = "[{\"feedUrl\": \"https://ilsignordistruggere.com/feed/atom/\"}]";
-
-        String listRequestBody = "{\"user_email\": \"test.user@gmail.com\"}";
-
-        this.mockMvc.perform(
-                post("/user/feed/list")
-                        .header("Authorization", "Bearer " + Authorization.obtainAccessToken())
-                        .header("Content-Type", "application/json")
-                        .content(listRequestBody))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(content().json(response));
+        mockListRequest(LIST_REQUEST_BODY, response);
     }
 
     @Test
     public void shouldReturn400Error_whenListingFeeds_IfUserIsNotFound() throws Exception {
-        String listRequestBody_UserNotFound = "{\"user_email\": \"not.found@gmail.com\"}";
+        String listRequestBody_UserNotFound = "{\"user_email\": \"" + USER_NOT_FOUND + "\"}";
 
         this.mockMvc.perform(
                 post("/user/feed/list")
@@ -107,13 +100,16 @@ class UserFeedControllerTest {
                         .content(listRequestBody_UserNotFound))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("User not found: not.found@gmail.com"));
+                .andExpect(content().string("User not found: " + USER_NOT_FOUND));
     }
 
     @Test
     public void shouldReturnUpdatedListOfUserFeeds_afterAddingANewFeed() throws Exception {
-        String feedUrl = FEED_URL_2;
-        String cudRequestBody = "{\"user_email\": \"test.user@gmail.com\", \"feed_url\": \"" + feedUrl + "\"}";
+        String cudRequestBody = "{\"user_email\": \"test.user@gmail.com\", \"feed_url\": \"" + FEED_URL_2 + "\"}";
+        String initialResponse = "[{\"feedUrl\": \"" + FEED_URL_1 + "\"}]";
+        String finalResponse = "[{\"feedUrl\": \"" + FEED_URL_1 + "\"}, {\"feedUrl\": \"" + FEED_URL_2 + "\"}]";
+
+        mockListRequest(LIST_REQUEST_BODY, initialResponse);
 
         this.mockMvc.perform(
                 post("/user/feed/add")
@@ -122,12 +118,14 @@ class UserFeedControllerTest {
                         .content(cudRequestBody))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().string("Feed " + feedUrl + " was added to user collection."));
+                .andExpect(content().string("Feed " + FEED_URL_2 + " was added to user collection."));
+
+        mockListRequest(LIST_REQUEST_BODY, finalResponse);
     }
 
     @Test
     public void shouldReturn400Error_whenAddingUserFeed_IfUserIsNotFound() throws Exception {
-        String cudRequestBody_UserNotFound = "{\"user_email\": \"not.found@gmail.com\", \"feed_url\": \"" + FEED_URL_2 + "\"}";
+        String cudRequestBody_UserNotFound = "{\"user_email\": \"" + USER_NOT_FOUND + "\", \"feed_url\": \"" + FEED_URL_2 + "\"}";
 
         this.mockMvc.perform(
                 post("/user/feed/add")
@@ -136,12 +134,12 @@ class UserFeedControllerTest {
                         .content(cudRequestBody_UserNotFound))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("User not found: not.found@gmail.com"));
+                .andExpect(content().string("User not found: " + USER_NOT_FOUND));
     }
 
     @Test
     public void shouldReturn400Error_whenAddingUserFeed_IfUrlIsMalformed() throws Exception {
-        String cudRequestBody_BadFeedUrl = "{\"user_email\": \"test.user@gmail.com\", \"feed_url\": \"feeds.feedburner.com/Disinformatico\"}";
+        String cudRequestBody_BadFeedUrl = "{\"user_email\": \"" + TEST_USER + "\", \"feed_url\": \"feeds.feedburner.com/Disinformatico\"}";
 
         this.mockMvc.perform(
                 post("/user/feed/add")
@@ -155,7 +153,7 @@ class UserFeedControllerTest {
 
     @Test
     public void shouldReturn400Error_whenAddingUserFeed_IfUrlIsNotAFeed() throws Exception {
-        String cudRequestBody_UrlNotAFeed = "{\"user_email\": \"test.user@gmail.com\", \"feed_url\": \"https://attivissimo.blogspot.com/\"}";
+        String cudRequestBody_UrlNotAFeed = "{\"user_email\": \"" + TEST_USER + "\", \"feed_url\": \"https://attivissimo.blogspot.com/\"}";
 
         this.mockMvc.perform(
                 post("/user/feed/add")
@@ -170,7 +168,7 @@ class UserFeedControllerTest {
 
     @Test
     public void shouldReturnMessage_whenUserFeedsAlreadyContainFeed() throws Exception {
-        String cudRequestBody_FeedAlreadyPresent = "{\"user_email\": \"test.user@gmail.com\", \"feed_url\": \"" + FEED_URL_1 + "\"}";
+        String cudRequestBody_FeedAlreadyPresent = "{\"user_email\": \"" + TEST_USER + "\", \"feed_url\": \"" + FEED_URL_1 + "\"}";
 
         this.mockMvc.perform(
                 post("/user/feed/add")
@@ -180,5 +178,16 @@ class UserFeedControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().string("User collection already contains feed " + FEED_URL_1));
+    }
+
+    private void mockListRequest(String listRequestBody, String response) throws Exception {
+        this.mockMvc.perform(
+                post("/user/feed/list")
+                        .header("Authorization", "Bearer " + Authorization.obtainAccessToken())
+                        .header("Content-Type", "application/json")
+                        .content(listRequestBody))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().json(response));
     }
 }
