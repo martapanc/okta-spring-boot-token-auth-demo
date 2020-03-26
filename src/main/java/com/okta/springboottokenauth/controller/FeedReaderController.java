@@ -32,9 +32,9 @@ public class FeedReaderController {
 
     @RequestMapping(value = "/find", method = POST)
     public Object findFeedUrl(@RequestBody Map<String, Object> payload) throws IOException {
-        Object feed_url = payload.get("feed_url");
+        Object site_url = payload.get("site_url");
 
-        return Reader.findFeedUrlsInWebsite(feed_url.toString());
+        return Reader.findFeedUrlsInWebsite(site_url.toString());
     }
 
     @RequestMapping(value = "/searchFeedly/{query}", method = GET, produces = {MediaType.APPLICATION_JSON_VALUE})
