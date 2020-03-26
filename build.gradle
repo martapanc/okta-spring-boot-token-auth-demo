@@ -21,8 +21,8 @@ apply plugin: 'io.spring.dependency-management'
 
 group = 'com.okta.springboottokenauth'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = 11
-targetCompatibility = 11
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 
 repositories {
 	mavenCentral()
